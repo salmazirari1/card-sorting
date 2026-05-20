@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Card Sorting — Méthode UX Research</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --ink: #1a1814;
+  --ink2: #4a4640;
+  --muted: #9a9490;
+  --rule: #e8e4de;
+  --accent: #2c5f2e;
+  --accent-light: #edf5ee;
+  --accent2: #c0392b;
+  --accent2-light: #fdf0ee;
+  --accent3: #d4891a;
+  --accent3-light: #fdf6ea;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+
+/* PROGRESS */
+.progress-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  background: var(--accent);
+  z-index: 200;
+  transition: width 0.1s;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 4rem;
+  background: rgba(247, 245, 240, 0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--rule);
+}
+
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: 1.15rem;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+  list-style: none;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--ink); }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9rem 2rem 5rem;
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
+}
+
+.hero-noise {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.hero-accent-blob {
+  position: absolute;
+  top: -10%; right: -5%;
+  width: 600px; height: 600px;
+  background: radial-gradient(ellipse, rgba(44,95,46,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-accent-blob2 {
+  position: absolute;
+  bottom: -5%; left: -5%;
+  width: 400px; height: 400px;
+  background: radial-gradient(ellipse, rgba(212,137,26,0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-inner {
+  max-width: 820px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--accent-light);
+  color: var(--accent);
+  border: 1px solid rgba(44,95,46,0.2);
+  border-radius: 100px;
+  padding: 0.4rem 1.1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 2.2rem;
+  animation: fadeUp 0.6s ease both;
+}
+
+.hero-tag::before {
+  content: '';
+  display: block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3.2rem, 8vw, 6.5rem);
+  font-weight: 900;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin-bottom: 0.3rem;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero-sub {
+  font-size: 1.15rem;
+  color: var(--ink2);
+  max-width: 520px;
+  margin: 1.5rem auto 3rem;
+  font-weight: 300;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+.hero-question {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent2);
+  border-radius: var(--radius-sm);
+  padding: 1.1rem 1.8rem;
+  font-size: 1rem;
+  color: var(--ink2);
+  font-weight: 400;
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: bounce 2.5s infinite;
+}
+
+.scroll-hint::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 36px;
+  background: linear-gradient(to bottom, var(--muted), transparent);
+}
+
+/* SECTIONS COMMON */
+.section-wrap {
+  padding: 7rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-bg-white {
+  background: var(--surface);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.section-bg-white .section-wrap { max-width: 100%; padding: 7rem 2rem; }
+.section-bg-white .section-inner { max-width: 1100px; margin: 0 auto; }
+
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1.2rem;
+}
+
+.section-label::before {
+  content: '';
+  display: block;
+  width: 24px; height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin-bottom: 1rem;
+  line-height: 1.1;
+}
+
+.lead {
+  font-size: 1.05rem;
+  color: var(--ink2);
+  max-width: 580px;
+  font-weight: 300;
+  margin-bottom: 3.5rem;
+}
+
+/* DIVIDER */
+.divider { width: 100%; height: 1px; background: var(--rule); }
+
+/* PROBLÈME */
+.problem-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.problem-card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.problem-card.bad { border-top: 3px solid var(--accent2); }
+.problem-card.good { border-top: 3px solid var(--accent); }
+
+.problem-card .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 100px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+}
+
+.bad .badge { background: var(--accent2-light); color: var(--accent2); }
+.good .badge { background: var(--accent-light); color: var(--accent); }
+
+.menu-items { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 0.55rem 1rem;
+  font-size: 0.88rem;
+  color: var(--ink2);
+}
+
+.menu-item .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bad .dot { background: var(--accent2); opacity: 0.7; }
+.good .dot { background: var(--accent); }
+
+/* DEFINITION */
+.def-block {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 20px;
+  padding: 3.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  margin-top: 1rem;
+}
+
+.def-block::before {
+  content: '"';
+  position: absolute;
+  top: -1rem; left: 2rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 12rem;
+  color: rgba(44,95,46,0.06);
+  line-height: 1;
+  pointer-events: none;
+  font-weight: 900;
+}
+
+.def-quote {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.2rem, 2.5vw, 1.65rem);
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--ink);
+  position: relative;
+  z-index: 1;
+}
+
+.def-quote em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+/* TYPES */
+.types-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.3rem;
+}
+
+.type-card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 2.2rem 2rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.type-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.type-icon {
+  font-size: 1.8rem;
+  margin-bottom: 1.2rem;
+  display: block;
+}
+
+.type-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.7rem;
+  color: var(--ink);
+}
+
+.type-card p {
+  font-size: 0.9rem;
+  color: var(--ink2);
+  line-height: 1.65;
+}
+
+.type-tag {
+  display: inline-block;
+  margin-top: 1.3rem;
+  padding: 0.22rem 0.75rem;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.type-card:nth-child(1) .type-tag { background: var(--accent-light); color: var(--accent); }
+.type-card:nth-child(2) .type-tag { background: var(--accent2-light); color: var(--accent2); }
+.type-card:nth-child(3) .type-tag { background: var(--accent3-light); color: var(--accent3); }
+
+/* HOW IT WORKS STEPS */
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 0.5rem;
+}
+
+.step-item {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.step-item:last-child { border-bottom: none; }
+
+.step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  border: 1px solid rgba(44,95,46,0.2);
+  color: var(--accent);
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.step-content h4 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+}
+
+.step-content p {
+  font-size: 0.92rem;
+  color: var(--ink2);
+  font-weight: 300;
+  line-height: 1.65;
+}
+
+/* DEMO */
+#demo { background: var(--bg); }
+
+.demo-instructions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: var(--accent-light);
+  border: 1px solid rgba(44,95,46,0.2);
+  border-radius: var(--radius-sm);
+  padding: 1.1rem 1.6rem;
+  font-size: 0.92rem;
+  color: var(--accent);
+  margin-bottom: 2rem;
+}
+
+.cards-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  padding: 1.3rem;
+  background: var(--surface);
+  border: 2px dashed var(--rule);
+  border-radius: var(--radius);
+  min-height: 80px;
+  margin-bottom: 2rem;
+  transition: border-color 0.2s;
+}
+
+.cards-pool.drag-over { border-color: var(--accent); }
+
+.drag-card {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+.drag-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.drag-card.dragging { opacity: 0.35; transform: scale(0.93); }
+
+.categories-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin-bottom: 1.8rem;
+}
+
+.drop-zone {
+  background: var(--surface);
+  border: 2px dashed var(--rule);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  min-height: 150px;
+  transition: border-color 0.2s, background 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.drop-zone.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.drop-zone-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.drop-zone-label::before {
+  content: '';
+  display: block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+.drop-zone:nth-child(1) .drop-zone-label::before { background: var(--accent); }
+.drop-zone:nth-child(2) .drop-zone-label::before { background: var(--accent2); }
+.drop-zone:nth-child(3) .drop-zone-label::before { background: var(--accent3); }
+
+.demo-actions { display: flex; gap: 0.9rem; flex-wrap: wrap; }
+
+.btn {
+  padding: 0.7rem 1.6rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(44,95,46,0.25);
+}
+
+.btn-primary:hover { background: #245026; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(44,95,46,0.3); }
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--ink2);
+  border: 1px solid var(--rule);
+}
+
+.btn-secondary:hover { color: var(--ink); border-color: var(--muted); }
+
+.demo-result {
+  display: none;
+  margin-top: 1.8rem;
+  background: var(--accent-light);
+  border: 1px solid rgba(44,95,46,0.2);
+  border-radius: var(--radius);
+  padding: 2rem;
+}
+
+.demo-result.show { display: block; animation: fadeUp 0.4s ease; }
+
+.demo-result h4 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin-bottom: 0.7rem;
+}
+
+.demo-result p { color: var(--ink2); font-size: 0.92rem; line-height: 1.7; }
+
+/* TOOLS */
+.tools-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.tool-card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 2rem 2rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.tool-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.tool-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.tool-name-block { display: flex; flex-direction: column; gap: 0.3rem; }
+
+.tool-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.tool-type {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.65rem;
+  border-radius: 100px;
+}
+
+.tool-logo {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  border: 1px solid var(--rule);
+}
+
+.tool-desc {
+  font-size: 0.88rem;
+  color: var(--ink2);
+  line-height: 1.65;
+  flex: 1;
+  margin-bottom: 1.4rem;
+}
+
+.tool-strengths {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.4rem;
+}
+
+.tool-strength {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--ink2);
+}
+
+.tool-strength::before {
+  content: '→';
+  color: var(--accent);
+  font-weight: 600;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+
+.tool-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--rule);
+}
+
+.tool-price {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.tool-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  transition: gap 0.2s;
+}
+
+.tool-link:hover { gap: 0.65rem; }
+
+.tool-link::after { content: '↗'; font-size: 0.85rem; }
+
+/* TYPE COLORS */
+.tool-type.pro { background: var(--accent-light); color: var(--accent); }
+.tool-type.complet { background: rgba(100,149,237,0.1); color: #3a6abf; }
+.tool-type.rapide { background: var(--accent3-light); color: var(--accent3); }
+.tool-type.collaboratif { background: rgba(156,39,176,0.08); color: #7b1fa2; }
+.tool-type.gratuit { background: rgba(0,150,136,0.08); color: #00695c; }
+
+/* BENCHMARK TABLE */
+.benchmark-section {
+  margin-top: 4rem;
+}
+
+.benchmark-section h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+}
+
+.benchmark-section p {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+.benchmark-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow-sm);
+}
+
+.benchmark-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  font-size: 0.87rem;
+  min-width: 700px;
+}
+
+.benchmark-table thead tr {
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule);
+}
+
+.benchmark-table th {
+  padding: 0.85rem 1.2rem;
+  text-align: center;
+  font-size: 0.73rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.benchmark-table th:first-child { text-align: left; }
+
+.benchmark-table td {
+  padding: 0.9rem 1.2rem;
+  text-align: center;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink2);
+  vertical-align: middle;
+}
+
+.benchmark-table td:first-child {
+  text-align: left;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.benchmark-table tr:last-child td { border-bottom: none; }
+.benchmark-table tbody tr:hover td { background: var(--bg); }
+
+.check { color: var(--accent); font-size: 1rem; }
+.partial { color: var(--accent3); font-size: 0.75rem; font-weight: 600; }
+.cross { color: var(--rule); font-size: 1rem; }
+
+/* CONCLUSION */
+.conclusion-section {
+  text-align: center;
+  padding: 8rem 2rem;
+  max-width: 820px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.conclusion-rule {
+  width: 60px; height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin: 0 auto 3rem;
+}
+
+.conclusion-quote {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.5rem, 3vw, 2.3rem);
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.conclusion-quote em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.conclusion-author {
+  margin-top: 2rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* FOOTER */
+footer {
+  background: var(--ink);
+  color: rgba(247,245,240,0.5);
+  padding: 2.5rem 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+
+footer .footer-logo {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: rgba(247,245,240,0.9);
+  letter-spacing: -0.01em;
+}
+
+footer .footer-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+footer .footer-links a {
+  text-decoration: none;
+  color: rgba(247,245,240,0.4);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+footer .footer-links a:hover { color: rgba(247,245,240,0.8); }
+
+.footer-copy { font-size: 0.75rem; color: rgba(247,245,240,0.3); }
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-8px); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  nav { padding: 1rem 1.5rem; }
+  .nav-links { display: none; }
+  .problem-grid, .types-grid, .categories-row, .tools-grid { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 1.5rem; text-align: center; padding: 2rem; }
+  footer .footer-links { flex-wrap: wrap; justify-content: center; gap: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<nav>
+  <div class="nav-logo">CardSort.ux</div>
+  <ul class="nav-links">
+    <li><a href="#probleme">Problème</a></li>
+    <li><a href="#definition">Méthode</a></li>
+    <li><a href="#types">Types</a></li>
+    <li><a href="#processus">Processus</a></li>
+    <li><a href="#demo">Démo</a></li>
+    <li><a href="#outils">Outils</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-noise"></div>
+  <div class="hero-accent-blob"></div>
+  <div class="hero-accent-blob2"></div>
+  <div class="hero-inner">
+    <div class="hero-tag">Méthode UX Research</div>
+    <h1>Card<br><em>Sorting</em></h1>
+    <p class="hero-sub">Concevoir des architectures d'information qui correspondent à la logique mentale réelle des utilisateurs.</p>
+    <div class="hero-question">
+      💭 Pourquoi les utilisateurs abandonnent un site alors que le contenu est bon ?
+    </div>
+  </div>
+  <div class="scroll-hint">Défiler</div>
+</section>
+
+<!-- PROBLÈME -->
+<div class="divider"></div>
+<div class="section-wrap" id="probleme">
+  <div class="section-label">01 — Contexte</div>
+  <h2>Le problème n'est<br>pas le contenu</h2>
+  <p class="lead">Ce qui perd les utilisateurs, c'est l'organisation de ce contenu — pas sa qualité. Une navigation confuse crée friction, frustration, et abandon.</p>
+
+  <div class="problem-grid reveal">
+    <div class="problem-card bad">
+      <div class="badge">❌ Navigation confuse</div>
+      <p style="color:var(--muted); font-size:0.87rem; margin-bottom:1rem;">Catégories floues qui reflètent la logique interne de l'équipe, pas celle de l'utilisateur.</p>
+      <div class="menu-items">
+        <div class="menu-item"><span class="dot"></span> Divers</div>
+        <div class="menu-item"><span class="dot"></span> Contenu général</div>
+        <div class="menu-item"><span class="dot"></span> Autres ressources</div>
+        <div class="menu-item"><span class="dot"></span> Section 4</div>
+        <div class="menu-item"><span class="dot"></span> Miscellaneous</div>
+      </div>
+    </div>
+    <div class="problem-card good">
+      <div class="badge">✓ Navigation intuitive</div>
+      <p style="color:var(--muted); font-size:0.87rem; margin-bottom:1rem;">Structure claire qui reflète exactement la façon dont les utilisateurs pensent et cherchent.</p>
+      <div class="menu-items">
+        <div class="menu-item"><span class="dot"></span> Cours</div>
+        <div class="menu-item"><span class="dot"></span> Exercices</div>
+        <div class="menu-item"><span class="dot"></span> Vidéos</div>
+        <div class="menu-item"><span class="dot"></span> Quiz</div>
+        <div class="menu-item"><span class="dot"></span> Mon espace</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DÉFINITION -->
+<div class="divider"></div>
+<div class="section-bg-white">
+  <div class="section-wrap">
+    <div class="section-inner" id="definition">
+      <div class="section-label">02 — Définition</div>
+      <h2>C'est quoi le<br>Card Sorting ?</h2>
+      <p class="lead">Une méthode UX Research simple et puissante pour révéler la logique mentale des utilisateurs.</p>
+
+      <div class="def-block reveal">
+        <p class="def-quote">
+          Le card sorting consiste à demander aux participants de <em>regrouper des contenus</em> écrits sur des cartes selon <em>leur propre logique</em>, afin de construire une architecture d'information véritablement centrée sur l'utilisateur.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TYPES -->
+<div class="divider"></div>
+<div class="section-wrap" id="types">
+  <div class="section-label">03 — Variantes</div>
+  <h2>3 types de<br>Card Sorting</h2>
+  <p class="lead">Selon votre objectif et votre phase de projet, choisissez la variante la plus adaptée à votre contexte.</p>
+
+  <div class="types-grid reveal">
+    <div class="type-card">
+      <span class="type-icon">🟢</span>
+      <h3>Tri Ouvert</h3>
+      <p>L'utilisateur crée lui-même ses propres catégories et y range librement les cartes. Aucune contrainte. Idéal pour explorer sans biais, en phase de discovery.</p>
+      <span class="type-tag">Exploration</span>
+    </div>
+    <div class="type-card">
+      <span class="type-icon">🔴</span>
+      <h3>Tri Fermé</h3>
+      <p>Les catégories sont prédéfinies par l'équipe. L'utilisateur range les cartes dans des groupes existants. Parfait pour valider une structure déjà proposée.</p>
+      <span class="type-tag">Validation</span>
+    </div>
+    <div class="type-card">
+      <span class="type-icon">🟡</span>
+      <h3>Tri Hybride</h3>
+      <p>Mix des deux approches : des catégories sont proposées, mais l'utilisateur peut en créer de nouvelles s'il le souhaite. Idéal pour optimiser une navigation existante.</p>
+      <span class="type-tag">Optimisation</span>
+    </div>
+  </div>
+</div>
+
+<!-- PROCESSUS -->
+<div class="divider"></div>
+<div class="section-bg-white">
+  <div class="section-wrap">
+    <div class="section-inner" id="processus">
+      <div class="section-label">04 — Méthodologie</div>
+      <h2>Comment mener<br>un Card Sorting ?</h2>
+      <p class="lead">5 étapes clés pour obtenir des insights actionnables sur l'architecture de votre produit.</p>
+
+      <div class="steps-list reveal">
+        <div class="step-item">
+          <span class="step-num">1</span>
+          <div class="step-content">
+            <h4>Définir l'objectif et le contenu</h4>
+            <p>Identifiez les pages, fonctionnalités ou contenus à tester. Préparez entre 30 et 100 cartes, chacune avec un seul concept. Évitez les termes trop techniques ou le jargon interne.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <span class="step-num">2</span>
+          <div class="step-content">
+            <h4>Choisir la méthode et l'outil</h4>
+            <p>Tri ouvert, fermé ou hybride ? En ligne ou présentiel ? Sélectionnez un outil adapté (OptimalSort, UXtweak, Miro…) selon vos contraintes de budget, de temps et d'effectif.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <span class="step-num">3</span>
+          <div class="step-content">
+            <h4>Recruter les participants</h4>
+            <p>Visez 15 à 30 participants représentatifs de votre audience cible. Au-delà de 20 participants, les patterns saturent et les nouvelles données apportent peu de valeur ajoutée.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <span class="step-num">4</span>
+          <div class="step-content">
+            <h4>Conduire les sessions</h4>
+            <p>Chaque session dure 30 à 60 minutes. Donnez les instructions claires, laissez les participants travailler librement, observez sans intervenir. Pensez à recueillir du contexte verbal.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <span class="step-num">5</span>
+          <div class="step-content">
+            <h4>Analyser et déduire l'architecture</h4>
+            <p>Utilisez les dendrogrammes, matrices de similarité et analyses de clusters pour identifier les regroupements communs. Construisez votre IA à partir des patterns récurrents, pas des cas isolés.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DEMO -->
+<div class="divider"></div>
+<div id="demo">
+  <div class="section-wrap">
+    <div class="section-label">05 — Démo interactive</div>
+    <h2>Essayez maintenant</h2>
+    <p class="lead">Glissez chaque carte dans la catégorie qui vous semble la plus naturelle. Il n'y a pas de bonne réponse — c'est votre logique mentale qui compte.</p>
+
+    <div class="demo-instructions">
+      <span>🎯</span>
+      Glissez les cartes dans les 3 catégories selon votre instinct. Regroupez librement.
+    </div>
+
+    <div class="cards-pool" id="cardsPool">
+      <div class="drag-card" draggable="true" data-item="Téléphone">📱 Téléphone</div>
+      <div class="drag-card" draggable="true" data-item="PC">💻 PC</div>
+      <div class="drag-card" draggable="true" data-item="Clavier">⌨️ Clavier</div>
+      <div class="drag-card" draggable="true" data-item="Souris">🖱️ Souris</div>
+      <div class="drag-card" draggable="true" data-item="T-shirt">👕 T-shirt</div>
+      <div class="drag-card" draggable="true" data-item="Chaussures">👟 Chaussures</div>
+      <div class="drag-card" draggable="true" data-item="Pantalon">👖 Pantalon</div>
+      <div class="drag-card" draggable="true" data-item="Casque">🎧 Casque</div>
+    </div>
+
+    <div class="categories-row">
+      <div class="drop-zone" id="zone1">
+        <div class="drop-zone-label">Catégorie A</div>
+      </div>
+      <div class="drop-zone" id="zone2">
+        <div class="drop-zone-label">Catégorie B</div>
+      </div>
+      <div class="drop-zone" id="zone3">
+        <div class="drop-zone-label">Catégorie C</div>
+      </div>
+    </div>
+
+    <div class="demo-actions">
+      <button class="btn btn-primary" onclick="showResult()">Voir l'analyse 🔍</button>
+      <button class="btn btn-secondary" onclick="resetDemo()">Recommencer</button>
+    </div>
+
+    <div class="demo-result" id="demoResult">
+      <h4>💡 Observation UX</h4>
+      <p id="resultText"></p>
+    </div>
+  </div>
+</div>
+
+<!-- OUTILS -->
+<div class="divider"></div>
+<div class="section-bg-white">
+  <div class="section-wrap">
+    <div class="section-inner" id="outils">
+      <div class="section-label">06 — Outils</div>
+      <h2>Les outils du<br>Card Sorting</h2>
+      <p class="lead">Une sélection raisonnée des meilleures plateformes selon votre contexte — avec définition, points forts et accès direct.</p>
+
+      <div class="tools-grid">
+
+        <div class="tool-card reveal">
+          <div class="tool-header">
+            <div class="tool-name-block">
+              <span class="tool-name">OptimalSort</span>
+              <span class="tool-type pro">Référence Pro</span>
+            </div>
+            <div class="tool-logo" style="background:#f0faf5;">🌿</div>
+          </div>
+          <p class="tool-desc">La référence dans le domaine du card sorting professionnel. OptimalSort (par Optimal Workshop) offre des analyses statistiques avancées : dendrogrammes, matrices de similarité, et mesures de consensus entre participants. Conçu spécifiquement pour les UX researchers qui ont besoin de résultats rigoureux et exportables.</p>
+          <div class="tool-strengths">
+            <span class="tool-strength">Dendrogrammes et analyses de clusters automatiques</span>
+            <span class="tool-strength">Participation à distance, sans installation</span>
+            <span class="tool-strength">Export des données brutes (CSV, rapport PDF)</span>
+            <span class="tool-strength">Intégration avec le Tree Testing de la même suite</span>
+          </div>
+          <div class="tool-footer">
+            <span class="tool-price">Gratuit limité · Payant dès 129$/mois</span>
+            <a class="tool-link" href="https://www.optimalworkshop.com/optimalsort/" target="_blank">Accéder à OptimalSort</a>
+          </div>
+        </div>
+
+        <div class="tool-card reveal reveal-delay-1">
+          <div class="tool-header">
+            <div class="tool-name-block">
+              <span class="tool-name">UXtweak</span>
+              <span class="tool-type complet">Suite Complète</span>
+            </div>
+            <div class="tool-logo" style="background:#eff4ff;">🔷</div>
+          </div>
+          <p class="tool-desc">Plateforme UX research tout-en-un qui inclut card sorting, tree testing, tests utilisateurs et enquêtes. UXtweak se distingue par son rapport qualité-prix et son interface moderne. Idéale pour les équipes produit qui cherchent à centraliser tous leurs outils de recherche.</p>
+          <div class="tool-strengths">
+            <span class="tool-strength">Card sorting + Tree testing dans la même plateforme</span>
+            <span class="tool-strength">Panel de participants intégré (recrutement facilité)</span>
+            <span class="tool-strength">Visualisations en temps réel pendant la session</span>
+            <span class="tool-strength">Plan gratuit généreux pour les petites équipes</span>
+          </div>
+          <div class="tool-footer">
+            <span class="tool-price">Gratuit · Pro dès 59$/mois</span>
+            <a class="tool-link" href="https://www.uxtweak.com/card-sorting-tool/" target="_blank">Accéder à UXtweak</a>
+          </div>
+        </div>
+
+        <div class="tool-card reveal">
+          <div class="tool-header">
+            <div class="tool-name-block">
+              <span class="tool-name">Maze</span>
+              <span class="tool-type rapide">Test Rapide</span>
+            </div>
+            <div class="tool-logo" style="background:#fff8ee;">🧡</div>
+          </div>
+          <p class="tool-desc">Maze est l'outil de choix pour les équipes qui travaillent avec Figma. Il permet d'intégrer directement vos prototypes dans des tests et d'y combiner du card sorting. Son point fort : la rapidité de mise en place et l'accessibilité pour les designers qui ne sont pas UX researchers de formation.</p>
+          <div class="tool-strengths">
+            <span class="tool-strength">Intégration native Figma, Sketch et InVision</span>
+            <span class="tool-strength">Tests mixtes : prototype + card sort en un flux</span>
+            <span class="tool-strength">Résultats automatisés avec indicateurs clairs</span>
+            <span class="tool-strength">Interface très simple, prise en main rapide</span>
+          </div>
+          <div class="tool-footer">
+            <span class="tool-price">Gratuit limité · Pro dès 99$/mois</span>
+            <a class="tool-link" href="https://maze.co/" target="_blank">Accéder à Maze</a>
+          </div>
+        </div>
+
+        <div class="tool-card reveal reveal-delay-1">
+          <div class="tool-header">
+            <div class="tool-name-block">
+              <span class="tool-name">Miro</span>
+              <span class="tool-type collaboratif">Collaboratif</span>
+            </div>
+            <div class="tool-logo" style="background:#fff3fb;">💜</div>
+          </div>
+          <p class="tool-desc">Le tableau blanc digital de référence pour les sessions de card sorting collaboratives, en présentiel ou en remote. Miro ne génère pas d'analyses statistiques automatiques, mais offre une flexibilité totale pour faciliter des ateliers avec des équipes ou des utilisateurs en temps réel.</p>
+          <div class="tool-strengths">
+            <span class="tool-strength">Idéal pour les sessions en équipe ou en atelier</span>
+            <span class="tool-strength">Templates card sorting prêts à l'emploi</span>
+            <span class="tool-strength">Collaboration en temps réel, multi-utilisateurs</span>
+            <span class="tool-strength">Intégration Jira, Confluence, Figma, Slack</span>
+          </div>
+          <div class="tool-footer">
+            <span class="tool-price">Gratuit (3 boards) · Business dès 16$/mois</span>
+            <a class="tool-link" href="https://miro.com/" target="_blank">Accéder à Miro</a>
+          </div>
+        </div>
+
+        <div class="tool-card reveal">
+          <div class="tool-header">
+            <div class="tool-name-block">
+              <span class="tool-name">Useberry</span>
+              <span class="tool-type complet">Tout-en-un</span>
+            </div>
+            <div class="tool-logo" style="background:#f5f0ff;">🫐</div>
+          </div>
+          <p class="tool-desc">Plateforme de tests utilisateurs qui inclut card sorting, tree testing et tests de prototype. Useberry se positionne comme une alternative à Maze avec un focus sur les tests d'utilisabilité. Ses analyses visuelles et ses heatmaps facilitent la communication des résultats aux stakeholders.</p>
+          <div class="tool-strengths">
+            <span class="tool-strength">Heatmaps et replays de sessions inclus</span>
+            <span class="tool-strength">Rapports visuels prêts à partager</span>
+            <span class="tool-strength">Tests A/B sur l'architecture de l'information</span>
+            <span class="tool-strength">Panel de recrutement intégré</span>
+          </div>
+          <div class="tool-footer">
+            <span class="tool-price">Gratuit · Pro dès 79$/mois</span>
+            <a class="tool-link" href="https://www.useberry.com/" target="_blank">Accéder à Useberry</a>
+          </div>
+        </div>
+
+        <div class="tool-card reveal reveal-delay-1">
+          <div class="tool-header">
+            <div class="tool-name-block">
+              <span class="tool-name">UsabilityHub</span>
+              <span class="tool-type gratuit">Accessible</span>
+            </div>
+            <div class="tool-logo" style="background:#edfdf5;">🟩</div>
+          </div>
+          <p class="tool-desc">Anciennement UsabilityHub, désormais renommé Lyssna. Plateforme accessible proposant des tests d'utilisabilité variés incluant le card sorting. Particulièrement apprécié pour son panel de participants mondial et son rapport qualité-prix pour les équipes à budget limité ou les freelances.</p>
+          <div class="tool-strengths">
+            <span class="tool-strength">Panel mondial de 530 000+ participants</span>
+            <span class="tool-strength">Tests rapides : résultats en moins de 24h</span>
+            <span class="tool-strength">Plusieurs types de tests sur une même plateforme</span>
+            <span class="tool-strength">Interface simple, idéale pour les débutants</span>
+          </div>
+          <div class="tool-footer">
+            <span class="tool-price">Gratuit limité · Pro dès 75$/mois</span>
+            <a class="tool-link" href="https://www.lyssna.com/" target="_blank">Accéder à Lyssna</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BENCHMARK TABLE -->
+      <div class="benchmark-section reveal">
+        <h3>Benchmark comparatif</h3>
+        <p>Vue synthétique des fonctionnalités clés par outil — pour choisir en un coup d'œil.</p>
+
+        <div class="benchmark-table-wrap">
+          <table class="benchmark-table">
+            <thead>
+              <tr>
+                <th>Outil</th>
+                <th>Tri ouvert</th>
+                <th>Tri fermé</th>
+                <th>Dendrogramme</th>
+                <th>Tree Testing</th>
+                <th>Recrutement</th>
+                <th>Figma</th>
+                <th>Plan gratuit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>OptimalSort</td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="cross">—</span></td>
+                <td><span class="cross">—</span></td>
+                <td><span class="partial">Limité</span></td>
+              </tr>
+              <tr>
+                <td>UXtweak</td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="cross">—</span></td>
+                <td><span class="check">✓</span></td>
+              </tr>
+              <tr>
+                <td>Maze</td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="cross">—</span></td>
+                <td><span class="cross">—</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="partial">Limité</span></td>
+              </tr>
+              <tr>
+                <td>Miro</td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="cross">—</span></td>
+                <td><span class="cross">—</span></td>
+                <td><span class="cross">—</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+              </tr>
+              <tr>
+                <td>Useberry</td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="partial">Basique</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+              </tr>
+              <tr>
+                <td>Lyssna</td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="partial">Basique</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="check">✓</span></td>
+                <td><span class="cross">—</span></td>
+                <td><span class="partial">Limité</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- CONCLUSION -->
+<div class="divider"></div>
+<section class="conclusion-section">
+  <div class="section-label" style="justify-content:center">07 — Conclusion</div>
+  <div class="conclusion-rule"></div>
+  <blockquote class="conclusion-quote">
+    "Une bonne architecture de l'information ne dépend pas du designer…<br>
+    mais de la façon dont <em>l'utilisateur pense</em>."
+  </blockquote>
+  <p class="conclusion-author">— Principe fondamental du Card Sorting UX</p>
+</section>
+
+<footer>
+  <span class="footer-logo">CardSort.ux</span>
+  <ul class="footer-links">
+    <li><a href="#probleme">Problème</a></li>
+    <li><a href="#definition">Méthode</a></li>
+    <li><a href="#types">Types</a></li>
+    <li><a href="#outils">Outils</a></li>
+  </ul>
+  <span class="footer-copy">Méthode UX Research — Architecture de l'information</span>
+</footer>
+
+<script>
+// Progress bar
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const scrolled = doc.scrollTop || document.body.scrollTop;
+  const max = doc.scrollHeight - doc.clientHeight;
+  document.getElementById('progress').style.width = (scrolled / max * 100) + '%';
+});
+
+// Scroll reveal
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+reveals.forEach(r => observer.observe(r));
+
+// Drag & drop
+let dragged = null;
+
+document.addEventListener('dragstart', e => {
+  if (e.target.classList.contains('drag-card')) {
+    dragged = e.target;
+    setTimeout(() => e.target.classList.add('dragging'), 0);
+  }
+});
+
+document.addEventListener('dragend', e => {
+  if (e.target.classList.contains('drag-card')) e.target.classList.remove('dragging');
+});
+
+document.querySelectorAll('.drop-zone, #cardsPool').forEach(zone => {
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    if (dragged) { zone.appendChild(dragged); dragged = null; }
+  });
+});
+
+function showResult() {
+  const zones = ['zone1','zone2','zone3'];
+  const filled = zones.filter(z => document.getElementById(z).querySelectorAll('.drag-card').length > 0).length;
+  const result = document.getElementById('demoResult');
+  result.classList.add('show');
+
+  if (filled === 0) {
+    document.getElementById('resultText').innerHTML = '⚠️ Glissez au moins quelques cartes dans les catégories pour voir l\'analyse.';
+    return;
+  }
+
+  const tech = ['Téléphone','PC','Clavier','Souris','Casque'];
+  const clothes = ['T-shirt','Chaussures','Pantalon'];
+
+  let groups = zones.map(z => [...document.getElementById(z).querySelectorAll('.drag-card')].map(c => c.dataset.item)).filter(g => g.length > 0);
+  let obs = `Vous avez créé <strong>${groups.length} groupe(s)</strong>. `;
+
+  groups.forEach((g, i) => {
+    const hasTech = g.some(it => tech.includes(it));
+    const hasClothes = g.some(it => clothes.includes(it));
+    if (hasTech && !hasClothes) obs += `Groupe ${i+1} : logique <em>technologie</em>. `;
+    if (hasClothes && !hasTech) obs += `Groupe ${i+1} : logique <em>vêtements</em>. `;
+    if (hasTech && hasClothes) obs += `Groupe ${i+1} : catégorie mixte — certains utilisateurs pensent par <em>contexte d'usage</em> plutôt que par type. `;
+  });
+
+  obs += '<br><br>💡 C\'est exactement ce que révèle le card sorting : chaque utilisateur a sa propre logique mentale. Un bon designer en tient compte pour concevoir une navigation réellement naturelle.';
+  document.getElementById('resultText').innerHTML = obs;
+  result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetDemo() {
+  const pool = document.getElementById('cardsPool');
+  document.querySelectorAll('.drop-zone .drag-card').forEach(c => pool.appendChild(c));
+  document.getElementById('demoResult').classList.remove('show');
+}
+</script>
+</body>
+</html>
